@@ -7,7 +7,7 @@ from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-
+# this part does the accuracy check I guess?
 def test_img(net_g, datatest, args):
     net_g.eval()
     # testing

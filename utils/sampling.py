@@ -5,7 +5,9 @@
 
 import numpy as np
 from torchvision import datasets, transforms
-
+#eğer farklı datasetler eklemek istersem tam buraya ekleme yapacağım
+#pytorchta train ve test yapılıp sonra olay buraya geliyor iid ve non iid için
+# does identical distribution
 def mnist_iid(dataset, num_users):
     """
     Sample I.I.D. client data from MNIST dataset
@@ -47,7 +49,7 @@ def mnist_noniid(dataset, num_users):
             dict_users[i] = np.concatenate((dict_users[i], idxs[rand*num_imgs:(rand+1)*num_imgs]), axis=0)
     return dict_users
 
-
+# why cifar non iid does not exist?
 def cifar_iid(dataset, num_users):
     """
     Sample I.I.D. client data from CIFAR10 dataset

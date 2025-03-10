@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Python version: 3.6
-
+# this part gives information about how to run the application
 import argparse
 
 def args_parser():

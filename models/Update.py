@@ -22,7 +22,7 @@ class DatasetSplit(Dataset):
         image, label = self.dataset[self.idxs[item]]
         return image, label
 
-
+# indicates loss after each epoch, loss is lower, is better
 class LocalUpdate(object):
     def __init__(self, args, dataset=None, idxs=None):
         self.args = args

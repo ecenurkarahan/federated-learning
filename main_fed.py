@@ -13,7 +13,7 @@ import torch
 from utils.sampling import mnist_iid, mnist_noniid, cifar_iid
 from utils.options import args_parser
 from models.Update import LocalUpdate
-from models.Nets import MLP, CNNMnist, CNNCifar
+from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2Mnist, ShuffleNetV2Cifar
 from models.Fed import FedAvg
 from models.test import test_img
 
@@ -26,6 +26,7 @@ if __name__ == '__main__':
     # load dataset and split users
     if args.dataset == 'mnist':
         trans_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+        #dataset testleri ve trainleri pytorch yapıyor sanırım
         dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True, transform=trans_mnist)
         dataset_test = datasets.MNIST('../data/mnist/', train=False, download=True, transform=trans_mnist)
         # sample users
@@ -44,7 +45,8 @@ if __name__ == '__main__':
     else:
         exit('Error: unrecognized dataset')
     img_size = dataset_train[0][0].shape
-
+#-----------------------------------------------
+#model eklenicekse buraya eklenip değiştirilebilir
     # build model
     if args.model == 'cnn' and args.dataset == 'cifar':
         net_glob = CNNCifar(args=args).to(args.device)
@@ -55,6 +57,10 @@ if __name__ == '__main__':
         for x in img_size:
             len_in *= x
         net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
+    elif args.model == 'shufflenet' and args.dataset == 'cifar':
+        net_glob = ShuffleNetV2Cifar(args=args).to(args.device)
+    elif args.model == 'shufflenet' and args.dataset == 'mnist':
+        net_glob = ShuffleNetV2Mnist(args=args).to(args.device)
     else:
         exit('Error: unrecognized model')
     print(net_glob)

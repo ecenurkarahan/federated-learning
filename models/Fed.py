@@ -6,7 +6,7 @@ import copy
 import torch
 from torch import nn
 
-
+# this part makes the average of the weights for federated learning
 def FedAvg(w):
     w_avg = copy.deepcopy(w[0])
     for k in w_avg.keys():

@@ -5,8 +5,10 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+import torchvision.models as models
 
-
+# this file contains the neural network models used in the project
+# mlp is dataset independent, cnn is dataset dependent
 class MLP(nn.Module):
     def __init__(self, dim_in, dim_hidden, dim_out):
         super(MLP, self).__init__()
@@ -23,7 +25,7 @@ class MLP(nn.Module):
         x = self.layer_hidden(x)
         return x
 
-
+# model arch öner yeni model arch oluştur
 class CNNMnist(nn.Module):
     def __init__(self, args):
         super(CNNMnist, self).__init__()
@@ -61,3 +63,35 @@ class CNNCifar(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+class ShuffleNetV2Mnist(nn.Module):
+    def __init__(self, args):
+        super(ShuffleNetV2Mnist, self).__init__()
+        
+        # Initialize ShuffleNetV2 with pre-trained weights
+        self.shufflenet = models.shufflenet_v2_x1_0(weights=models.ShuffleNet_V2_X1_0_Weights.IMAGENET1K_V1)
+        
+        # Replace the first convolutional layer to handle grayscale images
+        self.shufflenet.conv1[0] = nn.Conv2d(args.num_channels, 24, kernel_size=3, stride=1, padding=1, bias=False)
+        
+        # Replace the last fully connected layer
+        self.shufflenet.fc = nn.Linear(1024, args.num_classes)
+    
+    def forward(self, x):
+        return self.shufflenet(x)
+
+class ShuffleNetV2Cifar(nn.Module):
+    def __init__(self, args):
+        super(ShuffleNetV2Cifar, self).__init__()
+        
+        # Initialize ShuffleNetV2 with pre-trained weights
+        self.shufflenet = models.shufflenet_v2_x1_0(weights=models.ShuffleNet_V2_X1_0_Weights.IMAGENET1K_V1)
+        
+        # Replace the first convolutional layer to handle the smaller images of CIFAR-10
+        self.shufflenet.conv1[0] = nn.Conv2d(args.num_channels, 24, kernel_size=3, stride=1, padding=1, bias=False)
+        
+        # Replace the last fully connected layer
+        self.shufflenet.fc = nn.Linear(1024, args.num_classes)
+    
+    def forward(self, x):
+        return self.shufflenet(x)
