@@ -64,6 +64,25 @@ class CNNCifar(nn.Module):
         x = self.fc3(x)
         return x
 
+class CNNFashionMnist(nn.Module):
+    def __init__(self, args):
+        super(CNNFashionMnist, self).__init__()
+        self.conv1 = nn.Conv2d(args.num_channels, 10, kernel_size=5)
+        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
+        self.conv2_drop = nn.Dropout2d()
+        self.fc1 = nn.Linear(320, 50)
+        self.fc2 = nn.Linear(50, args.num_classes)
+
+    def forward(self, x):
+        x = F.relu(F.max_pool2d(self.conv1(x), 2))
+        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        x = x.view(-1, x.shape[1]*x.shape[2]*x.shape[3])
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, training=self.training)
+        x = self.fc2(x)
+        return x
+        
+# I think shufflenet should be dataset independent, they are literally the same code, lets ask it
 class ShuffleNetV2Mnist(nn.Module):
     def __init__(self, args):
         super(ShuffleNetV2Mnist, self).__init__()
@@ -95,3 +114,19 @@ class ShuffleNetV2Cifar(nn.Module):
     
     def forward(self, x):
         return self.shufflenet(x)
+class ShuffleNetV2FashionMnist(nn.Module):
+    def __init__(self, args):
+        super(ShuffleNetV2FashionMnist, self).__init__()
+        
+        # Initialize ShuffleNetV2 with pre-trained weights
+        self.shufflenet = models.shufflenet_v2_x1_0(weights=models.ShuffleNet_V2_X1_0_Weights.IMAGENET1K_V1)
+        
+        # Replace the first convolutional layer to handle grayscale images
+        self.shufflenet.conv1[0] = nn.Conv2d(args.num_channels, 24, kernel_size=3, stride=1, padding=1, bias=False)
+        
+        # Replace the last fully connected layer
+        self.shufflenet.fc = nn.Linear(1024, args.num_classes)
+    
+    def forward(self, x):
+        return self.shufflenet(x)
+# need to add 2 new functions: 1 to cnn, 1 to shufflenet
