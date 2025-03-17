@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 # this part does the accuracy check I guess?
+# create a test loss graph
 def test_img(net_g, datatest, args):
     net_g.eval()
     # testing

@@ -8,6 +8,7 @@ from torchvision import datasets, transforms
 #eğer farklı datasetler eklemek istersem tam buraya ekleme yapacağım
 #pytorchta train ve test yapılıp sonra olay buraya geliyor iid ve non iid için
 # does identical distribution
+#change the non iid distribution
 def mnist_iid(dataset, num_users):
     """
     Sample I.I.D. client data from MNIST dataset
