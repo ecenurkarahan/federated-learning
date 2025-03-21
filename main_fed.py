@@ -10,12 +10,15 @@ import numpy as np
 from torchvision import datasets, transforms
 import torch
 
-from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid
+from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_dirichlet
 from utils.options import args_parser
 from models.Update import LocalUpdate
-from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2Mnist, ShuffleNetV2Cifar, CNNFashionMnist, ShuffleNetV2FashionMnist
+from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2, CNNFashionMnist
 from models.Fed import FedAvg
 from models.test import test_img
+import time
+
+start_time = time.time()
 
 if __name__ == '__main__':
     # parse args
@@ -48,7 +51,9 @@ if __name__ == '__main__':
         if args.iid:
             dict_users = fashion_mnist_iid(dataset_train, args.num_users)
         else:
-            dict_users = fashion_mnist_noniid(dataset_train, args.num_users)
+            #tried to do dirichlet, dataset independent
+            print("inside the shufflenet non iid part")
+            dict_users = noniid_dirichlet(dataset_train, args.num_users,num_classes= args.num_classes,alpha=args.dirichlet_alpha)
     else:
         exit('Error: unrecognized dataset')
     img_size = dataset_train[0][0].shape
@@ -66,12 +71,8 @@ if __name__ == '__main__':
         for x in img_size:
             len_in *= x
         net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
-    elif args.model == 'shufflenet' and args.dataset == 'cifar':
-        net_glob = ShuffleNetV2Cifar(args=args).to(args.device)
-    elif args.model == 'shufflenet' and args.dataset == 'mnist':
-        net_glob = ShuffleNetV2Mnist(args=args).to(args.device)
-    elif args.model == 'shufflenet' and args.dataset == 'fashion_mnist':
-        net_glob = ShuffleNetV2FashionMnist(args=args).to(args.device)
+    elif args.model == 'shufflenet':
+        net_glob = ShuffleNetV2(args=args).to(args.device)
     else:
         exit('Error: unrecognized model')
     print(net_glob)
@@ -121,10 +122,6 @@ if __name__ == '__main__':
         loss_avg = sum(loss_locals) / len(loss_locals)
         print('Round {:3d}, Average loss {:.3f}'.format(iter, loss_avg))
         loss_train.append(loss_avg)
-        plt.figure()
-        plt.plot(range(len(loss_train)), loss_train)
-        plt.ylabel('train_loss')
-        plt.savefig('./save/fed_{}_{}_{}_C{}_iid{}.png'.format(args.dataset, args.model, args.epochs, args.frac, args.iid))
         # Testing
         net_glob.eval()
         acc_train, loss_train_test = test_img(net_glob, dataset_train, args)
@@ -133,23 +130,34 @@ if __name__ == '__main__':
         # Store test loss and accuracy
         test_loss_over_rounds.append(loss_test)
         test_acc_over_rounds.append(acc_test)
-        round_numbers.append(iter)
+        round_numbers.append(iter+1)
 
         print("Training accuracy: {:.2f}".format(acc_train))
         print("Testing accuracy: {:.2f}".format(acc_test))
-
-    # Plot test loss over rounds
+    
     plt.figure()
-    plt.plot(round_numbers, test_loss_over_rounds)
-    plt.xlabel('Round')
-    plt.ylabel('Test Loss')
-    plt.title('Test Loss Over Rounds')
-    plt.savefig('./save/test_loss_over_rounds-{args}.png')
+    plt.plot(range(len(loss_train)), loss_train)
+    plt.ylabel('train_loss')
+    plt.savefig('./save/fed_{}_{}_{}_C{}_iid{}.png'.format(args.dataset, args.model, args.epochs, args.frac, args.iid))
 
-    # Optionally, plot test accuracy over rounds
-    plt.figure()
-    plt.plot(round_numbers, test_acc_over_rounds)
+    # Plot train loss
+    plt.plot(range(len(loss_train)), loss_train, label='Train Loss', color='blue')
+
+    # Plot test loss
+    plt.plot(round_numbers, test_loss_over_rounds, label='Test Loss', color='red')
+
+    # Labels and title
     plt.xlabel('Round')
-    plt.ylabel('Test Accuracy')
-    plt.title('Test Accuracy Over Rounds')
-    plt.savefig('./save/test_accuracy_over_rounds-{args}.png')
+    plt.ylabel('Loss')
+    plt.title('Train and Test Loss Over Rounds')
+    plt.legend()  # Show legend to differentiate lines
+
+# Save the figure
+    plt.savefig('./save/loss_comparison_{}_{}_{}_C{}_iid{}.png'.format(
+        args.dataset, args.model, args.epochs, args.frac, args.iid
+    ))
+# Record elapsed time to a file
+end_time = time.time()
+elapsed_time = end_time - start_time
+with open('execution_time.txt', 'w') as f:
+    f.write(f"Execution time: {elapsed_time} seconds\n")
