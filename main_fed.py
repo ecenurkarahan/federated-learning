@@ -13,7 +13,7 @@ import torch
 from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_dirichlet
 from utils.options import args_parser
 from models.Update import LocalUpdate
-from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2, CNNFashionMnist
+from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2, CNNFashionMnist, ResNet18
 from models.Fed import FedAvg
 from models.test import test_img
 import time
@@ -73,6 +73,8 @@ if __name__ == '__main__':
         net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
     elif args.model == 'shufflenet':
         net_glob = ShuffleNetV2(args=args).to(args.device)
+    elif args.model == 'resnet18':
+        net_glob = ResNet18(args=args).to(args.device)
     else:
         exit('Error: unrecognized model')
     print(net_glob)

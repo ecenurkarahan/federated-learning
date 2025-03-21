@@ -83,9 +83,9 @@ class CNNFashionMnist(nn.Module):
         return x
         
 # I think shufflenet should be dataset independent, they are literally the same code, lets ask it
-class ShuffleNetV2Mnist(nn.Module):
+class ShuffleNetV2(nn.Module):
     def __init__(self, args):
-        super(ShuffleNetV2Mnist, self).__init__()
+        super(ShuffleNetV2, self).__init__()
         
         # Initialize ShuffleNetV2 with pre-trained weights
         self.shufflenet = models.shufflenet_v2_x1_0(weights=models.ShuffleNet_V2_X1_0_Weights.IMAGENET1K_V1)
@@ -99,34 +99,20 @@ class ShuffleNetV2Mnist(nn.Module):
     def forward(self, x):
         return self.shufflenet(x)
 
-class ShuffleNetV2Cifar(nn.Module):
+class ResNet18(nn.Module):
     def __init__(self, args):
-        super(ShuffleNetV2Cifar, self).__init__()
+        super(ResNet18, self).__init__()
         
-        # Initialize ShuffleNetV2 with pre-trained weights
-        self.shufflenet = models.shufflenet_v2_x1_0(weights=models.ShuffleNet_V2_X1_0_Weights.IMAGENET1K_V1)
+        # Initialize ResNet18 with pre-trained weights
+        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
         
-        # Replace the first convolutional layer to handle the smaller images of CIFAR-10
-        self.shufflenet.conv1[0] = nn.Conv2d(args.num_channels, 24, kernel_size=3, stride=1, padding=1, bias=False)
+        # Replace the first convolutional layer to handle grayscale images if necessary
+        if args.num_channels == 1:
+            self.resnet.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
         
         # Replace the last fully connected layer
-        self.shufflenet.fc = nn.Linear(1024, args.num_classes)
+        self.resnet.fc = nn.Linear(512, args.num_classes)
     
     def forward(self, x):
-        return self.shufflenet(x)
-class ShuffleNetV2FashionMnist(nn.Module):
-    def __init__(self, args):
-        super(ShuffleNetV2FashionMnist, self).__init__()
-        
-        # Initialize ShuffleNetV2 with pre-trained weights
-        self.shufflenet = models.shufflenet_v2_x1_0(weights=models.ShuffleNet_V2_X1_0_Weights.IMAGENET1K_V1)
-        
-        # Replace the first convolutional layer to handle grayscale images
-        self.shufflenet.conv1[0] = nn.Conv2d(args.num_channels, 24, kernel_size=3, stride=1, padding=1, bias=False)
-        
-        # Replace the last fully connected layer
-        self.shufflenet.fc = nn.Linear(1024, args.num_classes)
-    
-    def forward(self, x):
-        return self.shufflenet(x)
-# need to add 2 new functions: 1 to cnn, 1 to shufflenet
+        return self.resnet(x)
+

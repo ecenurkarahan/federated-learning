@@ -26,7 +26,7 @@ def args_parser():
     parser.add_argument('--split', type=str, default='user', help="train-test split type, user or sample")
 
     # model arguments
-    parser.add_argument('--model', type=str, default='mlp', help='model name (cnn, mlp, shufflenet)')
+    parser.add_argument('--model', type=str, default='mlp', help='model name (cnn, mlp, shufflenet, resnet18)')
     #can be useful when multiple types of kernels is used in a model but currently is not used
     parser.add_argument('--kernel_num', type=int, default=9, help='number of each kind of kernel')
     # can be useful when changing the architecture of cnn models, num of kernels used in each convolutional layer
@@ -51,6 +51,9 @@ def args_parser():
     parser.add_argument('--verbose', action='store_true', help='verbose print')
     parser.add_argument('--seed', type=int, default=1, help='random seed (default: 1)')
     # training will happen in all of the clients, if we use this frac will be ignored
+    # bunu iptal edip frac kullanılabilir sadece , eğer frac 1 ise zaten aggregation over all clients oluyor
     parser.add_argument('--all_clients', action='store_true', help='aggregation over all clients')
+    # enable user to give alpha value for the dirichlet distribution
+    parser.add_argument('--dirichlet_alpha', type= float,default=0.5, help= 'Alpha value given to dirichlet non iid distribution, if small more non iid')
     args = parser.parse_args()
     return args
