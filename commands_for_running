@@ -4,4 +4,4 @@ python main_fed.py --dataset fashion_mnist --iid --num_channels 1 --model shuffl
 python main_fed.py --dataset mnist --iid --num_channels 1 --model mlp --epochs 100 --gpu 0
 python main_fed.py --dataset fashion_mnist --num_channels 1 --model shufflenet --epochs 3 --dirichlet_alpha 0.6 --gpu 0
 python main_fed.py --dataset fashion_mnist --num_channels 1 --model shufflenet --epochs 3 --dirichlet_alpha 0.6 --gpu 0
-python main_fed.py --dataset mnist --num_channels 1 --model resnet18 --epochs 3 --gpu 0
+python main_fed.py --dataset mnist --num_channels 1 --model resnet18 --epochs 5 --gpu 0

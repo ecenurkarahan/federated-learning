@@ -24,6 +24,7 @@ if __name__ == '__main__':
     # parse args
     args = args_parser()
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
+    print("experiment is started")
 
     # load dataset and split users
     if args.dataset == 'mnist':
@@ -132,7 +133,7 @@ if __name__ == '__main__':
         # Store test loss and accuracy
         test_loss_over_rounds.append(loss_test)
         test_acc_over_rounds.append(acc_test)
-        round_numbers.append(iter+1)
+        round_numbers.append(iter)
 
         print("Training accuracy: {:.2f}".format(acc_train))
         print("Testing accuracy: {:.2f}".format(acc_test))
@@ -161,5 +162,6 @@ if __name__ == '__main__':
 # Record elapsed time to a file
 end_time = time.time()
 elapsed_time = end_time - start_time
-with open('execution_time.txt', 'w') as f:
-    f.write(f"Execution time: {elapsed_time} seconds\n")
+#model, dataset, epoch,fraction,num_channels,num_users,local_ep,iddness, accuracy train, accuracy test, elapsed time, time as minutes
+with open('experiment_results.csv', 'a') as f:
+    f.write(f"Model: {args.model}, Dataset: {args.dataset}, Epochs: {args.epochs}, Frac: {args.frac}, Num_channels: {args.num_channels}, Local_ep: {args.local_ep}, Iid: {args.iid},Train Accuracy: {acc_train},Test Accuracy: {acc_test}, Elapsed Time: {elapsed_time}, Time in minutes: {elapsed_time/60}\n")

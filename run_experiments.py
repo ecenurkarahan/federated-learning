@@ -1,38 +1,67 @@
-import os
-import time
 import subprocess
+import sys
 
 # List of parameter combinations to test
-experiments = [
-    {"dataset": "mnist", "model": "cnn", "epochs": 100, "iid": True,"fracs":0.4,"local_ep":5,"num_channels":1},
-    {"dataset": "mnist", "model": "mlp", "epochs": 100, "iid": True, "fracs":0.4, "local_ep":5, "num_channels":1},
-    {"dataset": "cifar", "model": "cnn", "epochs": 100, "iid": True, "fracs":0.4, "local_ep":5, "num_channels":3},
-    {"dataset": "fashion_mnist", "model": "shufflenet", "epochs": 30, "iid": True, "fracs":0.4,"local_ep":1,"num_channels":1},
+experiments = [ 
+"python main_fed.py --model mlp --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
 ]
-
-log_file = "experiment_results.txt"
+exp_cont= [
+    "python main_fed.py --model resnet18 --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model resnet18 --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 2 --iid --gpu 0",
+                        "python main_fed.py --model resnet18 --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --iid --gpu 0",
+                        "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model cnn --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model cnn --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --iid --gpu 0",
+                        "python main_fed.py --model cnn --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model cnn --dataset cifar --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model mlp --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model mlp --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model mlp --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model shufflenet --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0",
+                        "python main_fed.py --model shufflenet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --iid --gpu 0"]
+experiments_noniid = [
+    "python main_fed.py --model resnet18 --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model resnet18 --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 2 --gpu 0",
+                        "python main_fed.py --model resnet18 --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --gpu 0",
+                        "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model cnn --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model cnn --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --gpu 0",
+                        "python main_fed.py --model cnn --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model cnn --dataset cifar --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model mlp --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model mlp --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model mlp --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model shufflenet --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --gpu 0",
+                        "python main_fed.py --model shufflenet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --gpu 0"]
 
 for exp in experiments:
-    cmd = f"python main_fed.py --dataset {exp['dataset']} --model {exp['model']} --epochs {exp['epochs']} --fracs {exp['fracs']} --local_ep {exp['local_ep']} --num_channels {exp['num_channels']}"
-    if exp["iid"]:
-        cmd += " --iid"
+    print(f"Running experiment: {exp}")  # Debugging output
     
-    print(f"\nRunning: {cmd}")
-    start_time = time.time()
+    # Run with explicit Python interpreter
+    cmd = [sys.executable] + exp.split()[1:]  # Use current Python interpreter
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
-    # Run the main script and capture the output
-    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     stdout, stderr = process.communicate()
     
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-
-    # Extract accuracy from stdout (assuming the script prints accuracy like "Testing accuracy: 95.2")
-    acc_line = [line for line in stdout.split("\n") if "Testing accuracy" in line]
-    accuracy = acc_line[0].split(":")[1].strip() if acc_line else "N/A"
-
-    # Append results to log file
-    with open(log_file, "a") as f:
-        f.write(f"Dataset: {exp['dataset']}, Model: {exp['model']}, Epochs: {exp['epochs']}, IID: {exp['iid']}, Accuracy: {accuracy}, Time: {elapsed_time:.2f} sec\n")
-
-    print(f"Experiment completed! Accuracy: {accuracy}, Time: {elapsed_time:.2f} sec")
+    if process.returncode == 0:
+        print(f"Experiment succeeded: {exp}")
+        print(stdout)
+    else:
+        print(f"Experiment failed: {exp}")
+        print(stderr)
+"""geriye kalanlar:
+"python main_fed.py --model resnet18 --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --iid --gpu 0"
+    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model cnn --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model cnn --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --iid --gpu 0"
+    "python main_fed.py --model cnn --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model cnn --dataset cifar --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model mlp --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model mlp --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model mlp --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model shufflenet --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 5 --iid --gpu 0"
+    "python main_fed.py --model shufflenet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 5 --iid --gpu 0"
+    """
