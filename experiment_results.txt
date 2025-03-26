@@ -1,0 +1,9 @@
+
+Model: mlp, Dataset: mnist, Epochs: 100, Frac: 0.4, Num_channels: 1, Local_ep: 5, Iid: True,Train Accuracy: 98.5,Test Accuracy97.73999786376953, Elapsed Time: 4874.865119218826, Time in minutes: 81.24775198698043
+Model: resnet18, Dataset: cifar, Epochs: 100, Frac: 0.4, Num_channels: 3, Local_ep: 5, Iid: True,Train Accuracy: 99.01200103759766,Test Accuracy: 84.94000244140625, Elapsed Time: 13065.00354719162, Time in minutes: 217.75005911986034
+Model: resnet18, Dataset: cifar, Epochs: 100, Frac: 0.4, Num_channels: 3, Local_ep: 2, Iid: True,Train Accuracy: 97.27799987792969,Test Accuracy: 84.69000244140625, Elapsed Time: 6244.375667095184, Time in minutes: 104.07292778491974
+Model: resnet18, Dataset: cifar, Epochs: 100, Frac: 0.4, Num_channels: 3, Local_ep: 1, Iid: True,Train Accuracy: 93.64399719238281,Test Accuracy: 84.29000091552734, Elapsed Time: 4095.1628696918488, Time in minutes: 68.25271449486415
+Model: shufflenet, Dataset: fashion_mnist, Epochs: 100, Frac: 0.4, Num_channels: 1, Local_ep: 1, Iid: True,Train Accuracy: 91.76333618164062,Test Accuracy: 90.19000244140625, Elapsed Time: 7807.150829792023, Time in minutes: 130.11918049653372
+Model: shufflenet, Dataset: mnist, Epochs: 100, Frac: 0.4, Num_channels: 1, Local_ep: 1, Iid: True,Train Accuracy: 99.461669921875,Test Accuracy: 99.12000274658203, Elapsed Time: 7721.95609331131, Time in minutes: 128.69926822185516
+Model: shufflenet, Dataset: cifar, Epochs: 100, Frac: 0.4, Num_channels: 3, Local_ep: 2, Iid: True,Train Accuracy: 88.06199645996094,Test Accuracy: 82.26000213623047, Elapsed Time: 11600.268698215485, Time in minutes: 193.33781163692476
+Model: cnn, Dataset: mnist, Epochs: 100, Frac: 0.4, Num_channels: 1, Local_ep: 5, Iid: True,Train Accuracy: 98.89666748046875,Test Accuracy: 98.88999938964844, Elapsed Time: 5662.080175161362, Time in minutes: 94.36800291935603
