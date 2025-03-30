@@ -55,5 +55,6 @@ def args_parser():
     parser.add_argument('--all_clients', action='store_true', help='aggregation over all clients')
     # enable user to give alpha value for the dirichlet distribution
     parser.add_argument('--dirichlet_alpha', type= float,default=0.5, help= 'Alpha value given to dirichlet non iid distribution, if small more non iid')
+    parser.add_argument('--partition_noniid', type=int, default=None, help="Number of classes that is given to each client in non iid distribution")
     args = parser.parse_args()
     return args

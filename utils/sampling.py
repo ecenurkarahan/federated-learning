@@ -171,8 +171,57 @@ def noniid_dirichlet(dataset, num_users,num_classes, alpha=0.5):
             end = start + split_idxs[i]
             dict_users[i] = np.concatenate((dict_users[i], class_idxs[start:end]))
             start = end
-    
     return dict_users
+
+# datayı parçalara bölüp bir clienta gönder her clientta 2 veya 3 classtan sample olsun n class sample (parametreli)
+def noniid_class_partition(dataset, num_users, num_classes, n):
+    """
+    Partition dataset in a non-IID way, ensuring each client receives samples from exactly `n` distinct classes.
+    
+    :param dataset: PyTorch dataset (MNIST, CIFAR10, FashionMNIST, etc.)
+    :param num_users: Number of clients
+    :param num_classes: Total number of classes in the dataset
+    :param n: Number of different classes assigned to each client
+    :return: Dictionary mapping user_id to a list of data indices
+    """
+    assert n <= num_classes, "n must be less than or equal to the number of classes"
+    assert (num_users * n) % num_classes == 0, "Ensure clients can evenly divide class samples"
+
+    labels = np.array([target for _, target in dataset])  # Extract labels
+    idxs = np.arange(len(labels))  # Indices of the dataset
+    
+    # Group indices by class
+    class_idxs = {c: idxs[labels == c] for c in range(num_classes)}
+
+    # Shuffle indices within each class
+    for c in class_idxs:
+        np.random.shuffle(class_idxs[c])
+
+    dict_users = {i: np.array([], dtype="int64") for i in range(num_users)}
+
+    # Assign classes to clients
+    available_classes = list(range(num_classes))
+    np.random.shuffle(available_classes)
+
+    client_classes = {}
+    for i in range(num_users):
+        client_classes[i] = set()
+        while len(client_classes[i]) < n:
+            chosen_class = np.random.choice(available_classes)
+            client_classes[i].add(chosen_class)
+            available_classes.remove(chosen_class)
+            if not available_classes:  # Refill when empty
+                available_classes = list(range(num_classes))
+
+    # Assign samples from chosen classes to clients
+    for i in range(num_users):
+        for c in client_classes[i]:
+            num_samples = len(class_idxs[c]) // (num_users // num_classes * n)
+            dict_users[i] = np.concatenate((dict_users[i], class_idxs[c][:num_samples]))
+            class_idxs[c] = class_idxs[c][num_samples:]  # Remove assigned samples
+
+    return dict_users
+    
 if __name__ == '__main__':
     dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True,
                                    transform=transforms.Compose([

@@ -10,7 +10,7 @@ import numpy as np
 from torchvision import datasets, transforms
 import torch
 
-from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_dirichlet
+from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_dirichlet,noniid_class_partition
 from utils.options import args_parser
 from models.Update import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2, CNNFashionMnist, ResNet18
@@ -34,16 +34,24 @@ if __name__ == '__main__':
         # sample users
         if args.iid:
             dict_users = mnist_iid(dataset_train, args.num_users)
+        elif args.partition_noniid:
+            print(f"Using new non-IID partitioning on mnist with {args.partition_noniid} partitions")
+            dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
-            dict_users = mnist_noniid(dataset_train, args.num_users)
+            print("partititioning mnist with dirichlet")
+            dict_users = noniid_dirichlet(dataset_train, args.num_users,num_classes= args.num_classes,alpha=args.dirichlet_alpha)
     elif args.dataset == 'cifar':
         trans_cifar = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         dataset_train = datasets.CIFAR10('../data/cifar', train=True, download=True, transform=trans_cifar)
         dataset_test = datasets.CIFAR10('../data/cifar', train=False, download=True, transform=trans_cifar)
         if args.iid:
             dict_users = cifar_iid(dataset_train, args.num_users)
+        elif args.partition_noniid:
+            print(f"Using new non-IID partitioning on cifar10 with {args.partition_noniid} partitions")
+            dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
-            dict_users = cifar_noniid(dataset_train, args.num_users)
+            print("partititioning cifar10 with dirichlet")
+            dict_users = noniid_dirichlet(dataset_train, args.num_users,num_classes= args.num_classes,alpha=args.dirichlet_alpha)
     elif args.dataset== 'fashion_mnist':
         trans_fashion_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
         dataset_train = datasets.FashionMNIST('../data/fashion_mnist/', train=True, download=True, transform=trans_fashion_mnist)
@@ -51,9 +59,12 @@ if __name__ == '__main__':
         # sample users
         if args.iid:
             dict_users = fashion_mnist_iid(dataset_train, args.num_users)
+        elif args.partition_noniid:
+            print(f"Using new non-IID partitioning on fashion-mnist with {args.partition_noniid} partitions")
+            dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
             #tried to do dirichlet, dataset independent
-            print("inside the shufflenet non iid part")
+            print("partititioning fashion_mnist with dirichlet")
             dict_users = noniid_dirichlet(dataset_train, args.num_users,num_classes= args.num_classes,alpha=args.dirichlet_alpha)
     else:
         exit('Error: unrecognized dataset')
@@ -163,5 +174,5 @@ if __name__ == '__main__':
 end_time = time.time()
 elapsed_time = end_time - start_time
 #model, dataset, epoch,fraction,num_channels,num_users,local_ep,iddness, accuracy train, accuracy test, elapsed time, time as minutes
-with open('experiment_results.csv', 'a') as f:
+with open('experiment_results.txt', 'a') as f:
     f.write(f"Model: {args.model}, Dataset: {args.dataset}, Epochs: {args.epochs}, Frac: {args.frac}, Num_channels: {args.num_channels}, Local_ep: {args.local_ep}, Iid: {args.iid},Train Accuracy: {acc_train},Test Accuracy: {acc_test}, Elapsed Time: {elapsed_time}, Time in minutes: {elapsed_time/60}\n")
