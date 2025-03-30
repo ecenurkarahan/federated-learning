@@ -53,8 +53,8 @@ def args_parser():
     # training will happen in all of the clients, if we use this frac will be ignored
     # bunu iptal edip frac kullanılabilir sadece , eğer frac 1 ise zaten aggregation over all clients oluyor
     parser.add_argument('--all_clients', action='store_true', help='aggregation over all clients')
-    # enable user to give alpha value for the dirichlet distribution
-    parser.add_argument('--dirichlet_alpha', type= float,default=0.5, help= 'Alpha value given to dirichlet non iid distribution, if small more non iid')
+    # enable user to give alpha value for the dirichlet distribution, default was none but there was uncertainity like that
+    parser.add_argument('--dirichlet_alpha', type= float,default=None, help= 'Alpha value given to dirichlet non iid distribution, if small more non iid')
     parser.add_argument('--partition_noniid', type=int, default=None, help="Number of classes that is given to each client in non iid distribution")
     args = parser.parse_args()
     return args
