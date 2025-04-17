@@ -10,7 +10,7 @@ import numpy as np
 from torchvision import datasets, transforms
 import torch
 
-from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_dirichlet,noniid_class_partition
+from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_class_partition2, noniid_dirichlet,noniid_class_partition
 from utils.options import args_parser
 from models.Update import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2, CNNFashionMnist, ResNet18
@@ -19,6 +19,10 @@ from models.test import test_img
 import time
 
 start_time = time.time()
+isDirichlet = False
+isPartition = False
+alpha = None
+partition_n= None
 
 if __name__ == '__main__':
     # parse args
@@ -36,9 +40,13 @@ if __name__ == '__main__':
             dict_users = mnist_iid(dataset_train, args.num_users)
         elif args.partition_noniid:
             print(f"Using new non-IID partitioning on mnist with {args.partition_noniid} partitions")
-            dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
+            isPartition= True
+            partition_n= args.partition_noniid
+            dict_users = noniid_class_partition2(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
             print("partititioning mnist with dirichlet")
+            isDirichlet=True
+            alpha= args.dirichlet_alpha
             dict_users = noniid_dirichlet(dataset_train, args.num_users,num_classes= args.num_classes,alpha=args.dirichlet_alpha)
     elif args.dataset == 'cifar':
         trans_cifar = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -48,9 +56,13 @@ if __name__ == '__main__':
             dict_users = cifar_iid(dataset_train, args.num_users)
         elif args.partition_noniid:
             print(f"Using new non-IID partitioning on cifar10 with {args.partition_noniid} partitions")
+            isPartition= True
+            partition_n= args.partition_noniid
             dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
             print("partititioning cifar10 with dirichlet")
+            isDirichlet=True
+            alpha= args.dirichlet_alpha
             dict_users = noniid_dirichlet(dataset_train, args.num_users,num_classes= args.num_classes,alpha=args.dirichlet_alpha)
     elif args.dataset== 'fashion_mnist':
         trans_fashion_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
@@ -61,10 +73,14 @@ if __name__ == '__main__':
             dict_users = fashion_mnist_iid(dataset_train, args.num_users)
         elif args.partition_noniid:
             print(f"Using new non-IID partitioning on fashion-mnist with {args.partition_noniid} partitions")
+            isPartition= True            
+            partition_n= args.partition_noniid
             dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
             #tried to do dirichlet, dataset independent
             print("partititioning fashion_mnist with dirichlet")
+            isDirichlet=True
+            alpha= args.dirichlet_alpha
             dict_users = noniid_dirichlet(dataset_train, args.num_users,num_classes= args.num_classes,alpha=args.dirichlet_alpha)
     else:
         exit('Error: unrecognized dataset')
@@ -167,8 +183,8 @@ if __name__ == '__main__':
     plt.legend()  # Show legend to differentiate lines
 
 # Save the figure
-    plt.savefig('./save/loss_comparison_{}_{}_{}_C{}_iid{}.png'.format(
-        args.dataset, args.model, args.epochs, args.frac, args.iid
+    plt.savefig('./save/loss_comparison_{}_{}_{}_C{}_iid{}_isDirichlet{}_isPartition{}_dirichletA{}_partitionN{}.png'.format(
+        args.dataset, args.model, args.epochs, args.frac, args.iid, isDirichlet,isPartition, alpha,partition_n
     ))
 # Record elapsed time to a file
 end_time = time.time()

@@ -74,22 +74,22 @@ for exp in experiments:
 # shufflenet -> fashion_mnist
 # resnet-> cifar
 """ Non iid için deneyler:
-    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.3 --gpu 0"
-    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.6 --gpu 0"
-    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.9 --gpu 0"
-    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 3 --gpu 0"
+    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.3 --gpu 0"//tested
+    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 1.0 --gpu 0"//t
+    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 3.0 --gpu 0"
+    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 2 --gpu 0"//t
+    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 4 --gpu 0"
     "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 6 --gpu 0"
-    "python main_fed.py --model shufflenet --dataset fashion_mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 9 --gpu 0"
     "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --dirichlet_alpha 0.3 --gpu 0"
-    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --dirichlet_alpha 0.6 --gpu 0"
-    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --dirichlet_alpha 0.9 --gpu 0"
-    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --partition_noniid 3 --gpu 0"
+    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --dirichlet_alpha 1.0 --gpu 0"
+    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --dirichlet_alpha 3.0 --gpu 0"
+    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --partition_noniid 2 --gpu 0"
+    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --partition_noniid 4 --gpu 0"
     "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --partition_noniid 6 --gpu 0"
-    "python main_fed.py --model resnet --dataset cifar --epochs 100 --frac 0.4 --num_channels 3 --local_ep 1 --partition_noniid 9 --gpu 0"
-    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.3 --gpu 0"
-    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.6 --gpu 0"
-    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.9 --gpu 0"
-    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 3 --gpu 0" //test için bunu çalıştırdım
+    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 0.3 --gpu 0"// tested
+    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 1.0 --gpu 0"// tested
+    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --dirichlet_alpha 3.0 --gpu 0"
+    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 2 --gpu 0" //test için bunu çalıştırdım,// tested this with new non iid
+    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 4 --gpu 0"
     "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 6 --gpu 0"
-    "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 9 --gpu 0"
     """
