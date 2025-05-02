@@ -9,9 +9,9 @@ import copy
 import numpy as np
 from torchvision import datasets, transforms
 import torch
-
-from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_class_partition2, noniid_dirichlet,noniid_class_partition
+from utils.sampling import extreme_noniid_partition, mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_dirichlet
 from utils.options import args_parser
+from utils.distances import calculate_weight_distances
 from models.Update import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2, CNNFashionMnist, ResNet18
 from models.Fed import FedAvg
@@ -23,6 +23,9 @@ isDirichlet = False
 isPartition = False
 alpha = None
 partition_n= None
+distance_means = []
+distance_variances = []
+weights_over_epochs = []
 
 if __name__ == '__main__':
     # parse args
@@ -39,10 +42,10 @@ if __name__ == '__main__':
         if args.iid:
             dict_users = mnist_iid(dataset_train, args.num_users)
         elif args.partition_noniid:
-            print(f"Using new non-IID partitioning on mnist with {args.partition_noniid} partitions")
+            print(f"Using extreme non-IID partitioning on mnist with {args.partition_noniid} partitions")
             isPartition= True
             partition_n= args.partition_noniid
-            dict_users = noniid_class_partition2(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
+            dict_users = extreme_noniid_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
             print("partititioning mnist with dirichlet")
             isDirichlet=True
@@ -58,7 +61,7 @@ if __name__ == '__main__':
             print(f"Using new non-IID partitioning on cifar10 with {args.partition_noniid} partitions")
             isPartition= True
             partition_n= args.partition_noniid
-            dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
+            dict_users = extreme_noniid_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
             print("partititioning cifar10 with dirichlet")
             isDirichlet=True
@@ -75,7 +78,7 @@ if __name__ == '__main__':
             print(f"Using new non-IID partitioning on fashion-mnist with {args.partition_noniid} partitions")
             isPartition= True            
             partition_n= args.partition_noniid
-            dict_users = noniid_class_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
+            dict_users = extreme_noniid_partition(dataset = dataset_train, num_users = args.num_users,num_classes=args.num_classes, n = args.partition_noniid)
         else:
             #tried to do dirichlet, dataset independent
             print("partititioning fashion_mnist with dirichlet")
@@ -127,7 +130,12 @@ if __name__ == '__main__':
     test_loss_over_rounds = []
     test_acc_over_rounds = []
     round_numbers = []
-
+    # bu roundda dönen weight modle burada
+    # önceki versiyonları alsak
+    # cosine similarity farklı çıkmalı for non iid
+    # l1 distance
+    # l2 distance
+    # çıkan valueların mean ve variance ı
     for iter in range(args.epochs):
         loss_locals = []
         if not args.all_clients:
@@ -142,7 +150,30 @@ if __name__ == '__main__':
             else:
                 w_locals.append(copy.deepcopy(w))
             loss_locals.append(copy.deepcopy(loss))
+        # Store local weights for the current epoch
+        if iter == 0:
+            weights_over_epochs = [w_locals]
+        else:
+            weights_over_epochs.append(w_locals)
+
+        # Compare weights with the previous epoch
+        if iter > 0:
+            mean_dist, var_dist = calculate_weight_distances(
+                distance_metric=args.distance_metric,  # Change to 'l1' or 'cosine' as needed
+                weights_epoch_1=weights_over_epochs[iter - 1],
+                weights_epoch_2=weights_over_epochs[iter]
+            )
+            distance_means.append(mean_dist)
+            distance_variances.append(var_dist)
+            print(f"Epoch {iter}: Mean Distance = {mean_dist:.4f}, Variance = {var_dist:.4f}")
+        """
+        # Print local weights for the current epoch
+        print("************************************************************************")
+        print(f"Epoch {iter + 1}: Local weights for selected clients:")
+        for i, w_local in enumerate(w_locals):
+            print(f"Client {i}: {w_local}")"""
         # update global weights
+        # bburada client 
         w_glob = FedAvg(w_locals)
 
         # copy weight to net_glob
@@ -192,3 +223,20 @@ elapsed_time = end_time - start_time
 #model, dataset, epoch,fraction,num_channels,num_users,local_ep,iddness, accuracy train, accuracy test, elapsed time, time as minutes
 with open('noniid_experiment_results.txt', 'a') as f:
     f.write(f"Model: {args.model}, Dataset: {args.dataset}, Epochs: {args.epochs}, Frac: {args.frac}, Num_channels: {args.num_channels}, Local_ep: {args.local_ep}, Iid: {args.iid},Partitioning-based n: {args.partition_noniid}, Dirichlet alpha: {args.dirichlet_alpha},Train Accuracy: {acc_train},Test Accuracy: {acc_test}, Elapsed Time: {elapsed_time}, Time in minutes: {elapsed_time/60}\n")
+    # Plot and save the histogram of mean distances
+plt.figure()
+plt.hist(distance_means, bins=30, alpha=0.7, color='blue', label='Mean Distances')
+plt.title("Histogram of Mean Distances Across Epochs")
+plt.xlabel("Mean Distance")
+plt.ylabel("Frequency")
+plt.legend()
+plt.savefig('./save/distances/mean_distance_histogram_mwteic{}.png'.format(args.distance_metric))
+
+# Plot and save the histogram of variance distances
+plt.figure()
+plt.hist(distance_variances, bins=30, alpha=0.7, color='green', label='Variance of Distances')
+plt.title("Histogram of Variance of Distances Across Epochs")
+plt.xlabel("Variance")
+plt.ylabel("Frequency")
+plt.legend()
+plt.savefig('./save/distances/variance_distance_histogram_metric_{}.png'.format(args.distance_metric))

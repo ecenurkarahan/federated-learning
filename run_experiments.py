@@ -92,4 +92,5 @@ for exp in experiments:
     "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 2 --gpu 0" //test için bunu çalıştırdım,// tested this with new non iid
     "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 4 --gpu 0"
     "python main_fed.py --model cnn --dataset mnist --epochs 100 --frac 0.4 --num_channels 1 --local_ep 1 --partition_noniid 6 --gpu 0"
+    "python main_fed.py --model cnn --dataset mnist --epochs 50 --frac 0.3 --num_channels 1 --local_ep 1 --partition_noniid 2 --gpu 0"
     """

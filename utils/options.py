@@ -56,5 +56,7 @@ def args_parser():
     # enable user to give alpha value for the dirichlet distribution, default was none but there was uncertainity like that
     parser.add_argument('--dirichlet_alpha', type= float,default=None, help= 'Alpha value given to dirichlet non iid distribution, if small more non iid')
     parser.add_argument('--partition_noniid', type=int, default=None, help="Number of classes that is given to each client in non iid distribution")
+    # will give the distance metric as input
+    parser.add_argument('--distance_metric', type=str, default='l2', help="Distance metric for weight distance calculation")
     args = parser.parse_args()
     return args
