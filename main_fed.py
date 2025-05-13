@@ -11,28 +11,26 @@ from torchvision import datasets, transforms
 import torch
 from utils.sampling import extreme_noniid_partition, mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, fashion_mnist_iid, fashion_mnist_noniid, noniid_dirichlet
 from utils.options import args_parser
-from utils.distances import calculate_weight_distances
 from models.Update import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar, ShuffleNetV2, CNNFashionMnist, ResNet18
 from models.Fed import FedAvg
 from models.test import test_img
 import time
+import seaborn as sns
+import json
 
 start_time = time.time()
 isDirichlet = False
 isPartition = False
 alpha = None
 partition_n= None
-distance_means = []
-distance_variances = []
-weights_over_epochs = []
+
 
 if __name__ == '__main__':
     # parse args
     args = args_parser()
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
     print("experiment is started")
-
     # load dataset and split users
     if args.dataset == 'mnist':
         trans_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
@@ -121,6 +119,7 @@ if __name__ == '__main__':
     net_best = None
     best_loss = None
     val_acc_list, net_list = [], []
+    save_epochs = list(range(1, 11)) + list(range(20, args.epochs + 1, 10))
 
     if args.all_clients: 
         print("Aggregation over all clients")
@@ -130,6 +129,11 @@ if __name__ == '__main__':
     test_loss_over_rounds = []
     test_acc_over_rounds = []
     round_numbers = []
+    """weights_file= './save/weights_{}_{}_{}_C{}_iid{}_isDirichlet{}_isPartition{}_dirichletA{}_partitionN{}.pt'.format(
+        args.dataset, args.model, args.epochs, args.frac, args.iid, isDirichlet,isPartition, alpha,partition_n
+    )"""
+    #will uncomment the upper one later on
+    weights_file = './save/client_weights.txt'
     # bu roundda dönen weight modle burada
     # önceki versiyonları alsak
     # cosine similarity farklı çıkmalı for non iid
@@ -150,28 +154,13 @@ if __name__ == '__main__':
             else:
                 w_locals.append(copy.deepcopy(w))
             loss_locals.append(copy.deepcopy(loss))
-        # Store local weights for the current epoch
-        if iter == 0:
-            weights_over_epochs = [w_locals]
-        else:
-            weights_over_epochs.append(w_locals)
-
-        # Compare weights with the previous epoch
-        if iter > 0:
-            mean_dist, var_dist = calculate_weight_distances(
-                distance_metric=args.distance_metric,  # Change to 'l1' or 'cosine' as needed
-                weights_epoch_1=weights_over_epochs[iter - 1],
-                weights_epoch_2=weights_over_epochs[iter]
-            )
-            distance_means.append(mean_dist)
-            distance_variances.append(var_dist)
-            print(f"Epoch {iter}: Mean Distance = {mean_dist:.4f}, Variance = {var_dist:.4f}")
-        """
-        # Print local weights for the current epoch
-        print("************************************************************************")
-        print(f"Epoch {iter + 1}: Local weights for selected clients:")
-        for i, w_local in enumerate(w_locals):
-            print(f"Client {i}: {w_local}")"""
+        if(iter+1) in save_epochs:
+            with open(weights_file, 'a') as f:
+                epoch_data = {"epoch": iter + 1, "clients": []}
+                for client_id, weights in enumerate(w_locals):
+                    client_weights = {k: v.cpu().detach().numpy().tolist() for k, v in weights.items()}
+                    epoch_data["clients"].append({"client_id": client_id, "weights": client_weights})
+                f.write(json.dumps(epoch_data) + '\n')
         # update global weights
         # bburada client 
         w_glob = FedAvg(w_locals)
@@ -223,20 +212,3 @@ elapsed_time = end_time - start_time
 #model, dataset, epoch,fraction,num_channels,num_users,local_ep,iddness, accuracy train, accuracy test, elapsed time, time as minutes
 with open('noniid_experiment_results.txt', 'a') as f:
     f.write(f"Model: {args.model}, Dataset: {args.dataset}, Epochs: {args.epochs}, Frac: {args.frac}, Num_channels: {args.num_channels}, Local_ep: {args.local_ep}, Iid: {args.iid},Partitioning-based n: {args.partition_noniid}, Dirichlet alpha: {args.dirichlet_alpha},Train Accuracy: {acc_train},Test Accuracy: {acc_test}, Elapsed Time: {elapsed_time}, Time in minutes: {elapsed_time/60}\n")
-    # Plot and save the histogram of mean distances
-plt.figure()
-plt.hist(distance_means, bins=30, alpha=0.7, color='blue', label='Mean Distances')
-plt.title("Histogram of Mean Distances Across Epochs")
-plt.xlabel("Mean Distance")
-plt.ylabel("Frequency")
-plt.legend()
-plt.savefig('./save/distances/mean_distance_histogram_mwteic{}.png'.format(args.distance_metric))
-
-# Plot and save the histogram of variance distances
-plt.figure()
-plt.hist(distance_variances, bins=30, alpha=0.7, color='green', label='Variance of Distances')
-plt.title("Histogram of Variance of Distances Across Epochs")
-plt.xlabel("Variance")
-plt.ylabel("Frequency")
-plt.legend()
-plt.savefig('./save/distances/variance_distance_histogram_metric_{}.png'.format(args.distance_metric))
